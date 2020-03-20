@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>js/hbbtv_polyfill.js</file>
+    </qresource>
+</RCC>

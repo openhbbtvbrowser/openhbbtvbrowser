@@ -1,0 +1,24 @@
+.qmake.cache
+.qmake.stash
+openhbbtvbrowser
+openhbbtvbrowser.app
+
+*.o
+Makefile*
+*.pro.user*
+*.moc
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+*.orig
+*.rej
+*.pak
+.uic
+.rcc
+*.pyc
+.pch
+.obj
+
+# Compiled QML/JS code
+*.qmlc
+*.jsc
