@@ -10,7 +10,11 @@ WebView::WebView(QWidget *parent)
 
 void WebView::titleChanged(const QString &title)
 {
-     qDebug() << "titleChanged" << title;
+    if (title.startsWith("OipfVideoBroadcastMapper")) {
+        emit broadcastPlay();
+    } else if (title.startsWith("OipfAVControlMapper")) {
+        emit broadcastStop();
+    }
 }
 
 void WebView::loadFinished(bool ok)

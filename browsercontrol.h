@@ -2,6 +2,7 @@
 #define BROWSERCONTROL_H
 
 #include <QApplication>
+#include <QLocalSocket>
 #include <QObject>
 #include <QSocketNotifier>
 
@@ -28,6 +29,9 @@ struct input_event {
 #define KEY_LEFT		105
 #define KEY_RIGHT		106
 #define KEY_DOWN		108
+#define KEY_MUTE		113
+#define KEY_VOLUMEDOWN	114
+#define KEY_VOLUMEUP	115
 #define KEY_PAUSE		119
 #define KEY_STOP		128
 #define KEY_MENU		139
@@ -121,6 +125,9 @@ public:
 
 Q_SIGNALS:
     void activate(const int &keyCode);
+    void volumeMute();
+    void volumeDown();
+    void volumeUp();
 
 protected Q_SLOTS:
     void readKeycode();
@@ -142,6 +149,40 @@ Q_SIGNALS:
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
+};
+
+class CommandClient : public QObject
+{
+    Q_OBJECT
+
+public:
+    enum BrowserCommand {
+        CommandUrlChange = 1,
+        CommandSIChange = 2,
+        CommandAITChange = 3,
+
+        CommandBroadcastPlay = 1001,
+        CommandBroadcastStop = 1002,
+        CommandVolumeMute = 1003,
+        CommandVolumeDown = 1004,
+        CommandVolumeUp = 1005,
+        CommandExit = 1006,
+    };
+
+    CommandClient(const QString &sockFile = QString("/tmp/.sock.browser"));
+    bool writeCommand(int command);
+    bool writeCommand(int command, const QString &data);
+
+Q_SIGNALS:
+    void setUrl(const QString &url);
+    void setSIData(const quint32 &pmt, const quint32 &tsid, const quint32 &onid, const quint32 &ssid, const quint32 &chantype, const quint32 &chanid);
+    void setAITData();
+
+protected Q_SLOTS:
+    void readCommand();
+
+private:
+    QLocalSocket *m_socket;
 };
 
 #endif // BROWSERCONTROL_H

@@ -52,7 +52,6 @@ int main(int argc, char *argv[])
     QApplication app(qAppArgCount, qargv.data());
 
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::SpatialNavigationEnabled, true);
-    QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::AllowRunningInsecureContent, true);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::ShowScrollBars, false);
@@ -71,16 +70,15 @@ int main(int argc, char *argv[])
 #else
     window->resize(1280, 720);
 #endif
-    if (url.isEmpty()) {
-        window->hide();
-    } else {
-        window->webView()->setUrl(url);
-        window->show();
-    }
+    window->webView()->setUrl(url);
+    window->show();
 
 #if defined(Q_OS_LINUX)
     auto remote = new RemoteController();
     QObject::connect(remote, &RemoteController::activate, window->webView(), &WebView::sendKeyEvent);
+    QObject::connect(remote, &RemoteController::volumeMute, window, &BrowserWindow::volumeMute);
+    QObject::connect(remote, &RemoteController::volumeDown, window, &BrowserWindow::volumeDown);
+    QObject::connect(remote, &RemoteController::volumeUp, window, &BrowserWindow::volumeUp);
 #endif
 
     auto filter = new WindowEventFilter();

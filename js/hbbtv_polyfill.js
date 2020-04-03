@@ -28807,7 +28807,7 @@ class VideoHandler {
 
         if (mimeType.lastIndexOf('video/broadcast', 0) === 0) {
             _DEBUG_ && console.log('hbbtv-polyfill: BROADCAST VIDEO PLAYER ...');
-            window.sendQtMessage("OipfVideoBroadcastMapper");
+            window.signalopenhbbtvbrowser("OipfVideoBroadcastMapper");
             this.videoBroadcastEmbeddedObject = new _video_broadcast_embedded_object__WEBPACK_IMPORTED_MODULE_0__["OipfVideoBroadcastMapper"](node);
         }
         if (mimeType.lastIndexOf('video/mpeg4', 0) === 0 ||
@@ -28815,13 +28815,13 @@ class VideoHandler {
             mimeType.lastIndexOf('audio/mp4', 0) === 0 ||  // aac audio
             mimeType.lastIndexOf('audio/mpeg', 0) === 0) { // mp3 audio
             _DEBUG_ && console.log('hbbtv-polyfill: BROADBAND VIDEO PLAYER ...');
-            window.sendQtMessage("OipfAVControlMapper.data=" + node.data);
+            window.signalopenhbbtvbrowser("OipfAVControlMapper.data=" + node.data);
             new _a_v_control_embedded_object__WEBPACK_IMPORTED_MODULE_1__["OipfAVControlMapper"](node);
         }
         // setup mpeg dash player
         if(mimeType.lastIndexOf('application/dash+xml', 0) === 0){
             _DEBUG_ && console.log('hbbtv-polyfill: DASH VIDEO PLAYER ...');
-            window.sendQtMessage("OipfAVControlMapper.dash=" + node.data);
+            window.signalopenhbbtvbrowser("OipfAVControlMapper.dash=" + node.data);
             new _a_v_control_embedded_object__WEBPACK_IMPORTED_MODULE_1__["OipfAVControlMapper"](node, true);
         }
     }
@@ -29236,7 +29236,7 @@ function init() {
     Object(_keyevent_init_js__WEBPACK_IMPORTED_MODULE_0__["keyEventInit"])();
     Object(_hbbtv_js__WEBPACK_IMPORTED_MODULE_1__["hbbtvFn"])();
 
-    window.sendQtMessage = function(command) {
+    window.signalopenhbbtvbrowser = function(command) {
         document.title = command;
     }
 

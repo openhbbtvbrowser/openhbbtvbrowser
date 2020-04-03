@@ -10,6 +10,10 @@ class WebView : public QWebEngineView
 public:
     WebView(QWidget *parent = Q_NULLPTR);
 
+Q_SIGNALS:
+    void broadcastPlay();
+    void broadcastStop();
+
 public Q_SLOTS:
     void sendKeyEvent(const int &keyCode);
 

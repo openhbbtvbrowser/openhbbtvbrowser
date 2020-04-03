@@ -82,6 +82,9 @@ void RemoteController::readKeycode()
             case KEY_STOP:          vk = VK_STOP; break;
             case KEY_FASTFORWARD:   vk = VK_FAST_FWD; break;
             case KEY_REWIND:        vk = VK_REWIND; break;
+            case KEY_MUTE:          emit volumeMute(); break;
+            case KEY_VOLUMEDOWN:    emit volumeDown(); break;
+            case KEY_VOLUMEUP:      emit volumeUp(); break;
             case KEY_MENU:          QApplication::quit(); break; // TODO
             }
             if (vk != VK_UNDEFINED) emit activate(vk);
@@ -131,4 +134,86 @@ bool WindowEventFilter::eventFilter(QObject *obj, QEvent *event)
     }
 
     return QObject::eventFilter(obj, event);
+}
+
+CommandClient::CommandClient(const QString &sockFile)
+    : m_socket(new QLocalSocket(this))
+{
+    connect(m_socket, &QLocalSocket::readyRead, this, &CommandClient::readCommand);
+
+    m_socket->abort();
+    m_socket->connectToServer(sockFile);
+}
+
+void CommandClient::readCommand()
+{
+    while (!m_socket->atEnd()) {
+        if (m_socket->bytesAvailable() < 12)
+            return;
+
+        quint32 magic, command, dataSize;
+
+        QDataStream inStream(m_socket->read(12));
+        inStream >> magic
+                 >> command
+                 >> dataSize;
+
+        if (magic != 987654321)
+            continue;
+
+        char buf[dataSize + 1];
+        if (dataSize)
+            m_socket->read(buf, dataSize);
+        buf[dataSize] = 0;
+
+        switch (command) {
+        case CommandUrlChange: {
+            QString url(buf);
+            emit setUrl(url);
+            break;
+        }
+
+        case CommandSIChange: {
+            QDataStream dataStream(buf);
+            quint32 pmt, tsid, onid, ssid, chantype, chanid;
+            dataStream >> pmt
+                       >> tsid
+                       >> onid
+                       >> ssid
+                       >> chantype
+                       >> chanid;
+            emit setSIData(pmt, tsid, onid, ssid, chantype, chanid);
+            break;
+        }
+
+        case CommandAITChange:
+            emit setAITData();
+            break;
+        }
+    }
+}
+
+bool CommandClient::writeCommand(int command)
+{
+    if (!m_socket->isValid())
+        return false;
+
+    QDataStream outStream(m_socket);
+    outStream << (qint32)987654321
+              << (qint32)command
+              << (qint32)0;
+    return m_socket->waitForConnected(1000);
+}
+
+bool CommandClient::writeCommand(int command, const QString &data)
+{
+    if (!m_socket->isValid())
+        return false;
+
+    QDataStream outStream(m_socket);
+    outStream << (qint32)987654321
+              << (qint32)command
+              << (qint32)data.size();
+    m_socket->write(data.toStdString().c_str(), data.size());
+    return m_socket->waitForConnected(1000);
 }
