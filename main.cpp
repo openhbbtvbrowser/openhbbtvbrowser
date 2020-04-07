@@ -8,6 +8,33 @@
 #include <QWebEngineSettings>
 #include <QWebEngineProfile>
 
+#if defined(Q_OS_LINUX)
+#include <sys/stat.h>
+#include <sys/mount.h>
+#include <errno.h>
+#include <stddef.h>
+
+int mkdir_mount_devshm(void)
+{
+    const char mountpoint[] = "/dev/shm";
+    struct stat s;
+
+    if (stat(mountpoint, &s) == -1) {
+        if (errno == ENOENT) {
+            if (mkdir(mountpoint, 0755))
+                return -1;
+
+            if (mount("tmpfs", mountpoint, "tmpfs", 0, NULL))
+                return -1;
+        } else {
+            return -1;
+        }
+    }
+
+    return 0;
+}
+#endif
+
 const QString userAgent =
     QStringLiteral("HbbTV/1.4.1 (+DRM;Samsung;SmartTV2015;T-HKM6DEUC-1490.3;;) HybridTvViewer");
 
@@ -24,6 +51,9 @@ QUrl commandLineUrlArgument()
 int main(int argc, char *argv[])
 {
 #if defined(Q_OS_LINUX)
+    if (mkdir_mount_devshm())
+        return 1;
+
     qputenv("QT_QPA_FONTDIR", "/usr/share/fonts");
     qputenv("QT_QPA_PLATFORM", "eglfs");
     qputenv("QT_QPA_EGLFS_HIDECURSOR", "1");
