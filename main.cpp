@@ -2,6 +2,8 @@
 #include "browserwindow.h"
 #include "webview.h"
 #include <QApplication>
+#include <QDir>
+#include <QLockFile>
 #include <QUrl>
 #include <QWebEngineSettings>
 #include <QWebEngineProfile>
@@ -50,6 +52,12 @@ int main(int argc, char *argv[])
     int qAppArgCount = qargv.size();
 
     QApplication app(qAppArgCount, qargv.data());
+
+    QLockFile lockFile(QDir::tempPath() + "/openhbbtvbrowser.lock");
+    if(!lockFile.tryLock(100)) {
+        qDebug() << "The application is already running.";
+        return 1;
+    }
 
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::SpatialNavigationEnabled, true);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
