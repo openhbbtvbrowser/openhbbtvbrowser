@@ -23,16 +23,6 @@ protected Q_SLOTS:
     void broadcastPlay();
     void broadcastStop();
 
-protected Q_SLOTS:
-    void setUrl(const QString &url);
-    void setSIData(const quint32 &pmt,
-                   const quint32 &tsid,
-                   const quint32 &onid,
-                   const quint32 &ssid,
-                   const quint32 &chantype,
-                   const quint32 &chanid);
-    void setAITData();
-
 private:
     CommandClient *m_commandClient;
     WebView *m_webView;

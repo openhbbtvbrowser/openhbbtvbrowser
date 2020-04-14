@@ -28807,7 +28807,7 @@ class VideoHandler {
 
         if (mimeType.lastIndexOf('video/broadcast', 0) === 0) {
             _DEBUG_ && console.log('hbbtv-polyfill: BROADCAST VIDEO PLAYER ...');
-            window.signalopenhbbtvbrowser("OipfVideoBroadcastMapper");
+            window.signalopenhbbtvbrowser("OipfVideoBroadcastEmbeddedObject");
             this.videoBroadcastEmbeddedObject = new _video_broadcast_embedded_object__WEBPACK_IMPORTED_MODULE_0__["OipfVideoBroadcastMapper"](node);
         }
         if (mimeType.lastIndexOf('video/mpeg4', 0) === 0 ||
@@ -28815,13 +28815,13 @@ class VideoHandler {
             mimeType.lastIndexOf('audio/mp4', 0) === 0 ||  // aac audio
             mimeType.lastIndexOf('audio/mpeg', 0) === 0) { // mp3 audio
             _DEBUG_ && console.log('hbbtv-polyfill: BROADBAND VIDEO PLAYER ...');
-            window.signalopenhbbtvbrowser("OipfAVControlMapper.data=" + node.data);
+            window.signalopenhbbtvbrowser("OipfAVControlObject:" + node.data);
             new _a_v_control_embedded_object__WEBPACK_IMPORTED_MODULE_1__["OipfAVControlMapper"](node);
         }
         // setup mpeg dash player
         if(mimeType.lastIndexOf('application/dash+xml', 0) === 0){
             _DEBUG_ && console.log('hbbtv-polyfill: DASH VIDEO PLAYER ...');
-            window.signalopenhbbtvbrowser("OipfAVControlMapper.dash=" + node.data);
+            window.signalopenhbbtvbrowser("OipfAVControlObject:" + node.data);
             new _a_v_control_embedded_object__WEBPACK_IMPORTED_MODULE_1__["OipfAVControlMapper"](node, true);
         }
     }
@@ -29067,10 +29067,31 @@ const hbbtvFn = function () {
     };
 
     Application.prototype.createApplication = function (uri, createChild) {
+        _DEBUG_ && console.log('hbbtv-polyfill: createApplication: ' + uri);
 
-        // "dvb://current.ait/11.2?select=special%3Asett%3Bsel%3Aidxok%3A6"
-        const query = uri.split("?")[1] || "";
-        window.location.href = window.location.origin + (query ? "?" + query : "");
+        var newLocation = uri;
+
+        if (uri.startsWith("dvb://current.ait")) {
+            var app;
+
+            app = /dvb:\/\/current\.ait\/(.*)\.(.*)([\?#].*)/.exec(uri);
+            if (app == undefined) {
+                app = /dvb:\/\/current\.ait\/(.*)\.(.*)/.exec(uri);
+            }
+
+            if (app) {
+                let appid = ('0' + app[2].toLocaleUpperCase()).slice(-2);
+                let newurl = window._HBBTV_APPURL_.get(appid);
+
+                if (newurl) {
+                    newLocation = newurl + (app[3] ? app[3] : "");
+                }
+            }
+        }
+
+        _DEBUG_ && console.log('hbbtv-polyfill: createApplication: ' + uri + " -> " + newLocation);
+
+        window.signalopenhbbtvbrowser("createApplication:" + newLocation);
     };
 
     Application.prototype.destroyApplication = function () {
@@ -29084,10 +29105,10 @@ const hbbtvFn = function () {
     window.oipfConfiguration = window.oipfConfiguration || {};
 
     oipfConfiguration.configuration = {};
-    oipfConfiguration.configuration.preferredAudioLanguage = window.localStorage.getItem('tvViewer_country') || 'ENG';
-    oipfConfiguration.configuration.preferredSubtitleLanguage = window.localStorage.getItem('tvViewer_country') || 'ENG,FRA';
-    oipfConfiguration.configuration.preferredUILanguage = window.localStorage.getItem('tvViewer_country') || 'ENG,FRA';
-    oipfConfiguration.configuration.countryId = window.localStorage.getItem('tvViewer_country') || 'ENG';
+    oipfConfiguration.configuration.preferredAudioLanguage = window.HBBTV_POLYFILL_NS.preferredLanguage || 'ENG';
+    oipfConfiguration.configuration.preferredSubtitleLanguage = window.HBBTV_POLYFILL_NS.preferredLanguage || 'ENG,FRA';
+    oipfConfiguration.configuration.preferredUILanguage = window.HBBTV_POLYFILL_NS.preferredLanguage || 'ENG,FRA';
+    oipfConfiguration.configuration.countryId = window.HBBTV_POLYFILL_NS.preferredLanguage || 'ENG';
     //oipfConfiguration.configuration.regionId = 0;
     //oipfConfiguration.localSystem = {};
     oipfConfiguration.getText = function (key) {
@@ -29098,26 +29119,33 @@ const hbbtvFn = function () {
 
     // 7.15.3 The application/oipfCapabilities embedded object ---------------------
     window.oipfCapabilities = window.oipfCapabilities || {};
-    var storedCapabilities = window.localStorage.getItem('tvViewer_capabilities'); // FIXME: use tvViewer_caps object
+    var storedCapabilities = null;
     var currentCapabilities = storedCapabilities ||
-        '<profilelist>' +
-        '<ui_profile name="OITF_HD_UIPROF+META_SI+META_EIT+TRICKMODE+RTSP+AVCAD+DRM+DVB_T">' +
+        '<profilelist xmlns="urn:hbbtv:config:oitf:oitfCapabilities:2017-1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:hbbtv:config:oitf:oitfCapabilities:2017-1 hbbtv-capabilities-2020-1.xsd">' +
+        '<ui_profile name="OITF_HD_UIPROF+DVB_S+TRICKMODE+META_SI+META_EIT+RTSP+AVCAD+DRM">' +
         '<ext>' +
-        '<colorkeys>true</colorkeys>' +
-        '<video_broadcast type="ID_DVB_T" scaling="arbitrary" minSize="0">true</video_broadcast>' +
         '<parentalcontrol schemes="dvb-si">true</parentalcontrol>' +
+        '<clientMetadata type="dvb-si">true</clientMetadata>' +
+        '<temporalClipping/>' +
+        '<html5_media>true</html5_media>' +
+        '<ta version="1.1.1" broadcastTimelineMonitoring="true" GOPIndependentSwitchToBroadcast="true">' +
+        '<profile>urn:hbbtv:ta:profile:2019:1</profile>' +
+        '<profile>urn:hbbtv:ta:profile:2019:2</profile>' +
+        '</ta>' +
         '</ext>' +
         '<drm DRMSystemID="urn:dvb:casystemid:19219">TS MP4</drm>' +
         '<drm DRMSystemID="urn:dvb:casystemid:1664" protectionGateways="ci+">TS</drm>' +
         '</ui_profile>' +
         '<audio_profile name=\"MPEG1_L3\" type=\"audio/mpeg\"/>' +
         '<audio_profile name=\"HEAAC\" type=\"audio/mp4\"/>' +
-        '<video_profile name=\"TS_AVC_SD_25_HEAAC\" type=\"video/mpeg\"/>' +
-        '<video_profile name=\"TS_AVC_HD_25_HEAAC\" type=\"video/mpeg\"/>' +
+        '<audio_profile name=\"MP4_HEAAC\" type=\"audio/mp4\" transport=\"dash\" sync_tl=\"dash_pr\"/>' +
+        '<video_profile name=\"MP4_AVC_HD_25_HEAAC\" type=\"video/mp4\" transport=\"dash\" sync_tl=\"dash_pr\"/>' +
+        '<video_profile name=\"MP4_AVC_SD_25_HEAAC_EBUTTD\" type=\"video/mp4\" transport=\"dash\" sync_tl=\"dash_pr\"/>' +
+        '<video_profile name=\"MP4_AVC_HD_25_HEAAC_EBUTTD\" type=\"video/mp4\" transport=\"dash\" sync_tl=\"dash_pr\"/>' +
+        '<video_profile name=\"TS_AVC_SD_25_HEAAC\" type=\"video/mpeg\" sync_tl=\"temi\"/>' +
+        '<video_profile name=\"TS_AVC_HD_25_HEAAC\" type=\"video/mpeg\" sync_tl=\"temi\"/>' +
         '<video_profile name=\"MP4_AVC_SD_25_HEAAC\" type=\"video/mp4\"/>' +
         '<video_profile name=\"MP4_AVC_HD_25_HEAAC\" type=\"video/mp4\"/>' +
-        '<video_profile name=\"MP4_AVC_SD_25_HEAAC\" type=\"video/mp4\" transport=\"dash\"/>' +
-        '<video_profile name=\"MP4_AVC_HD_25_HEAAC\" type=\"video/mp4\" transport=\"dash\"/>' +
         '</profilelist>';
     var videoProfiles = currentCapabilities.split('video_profile');
     window.oipfCapabilities.xmlCapabilities = (new window.DOMParser()).parseFromString(currentCapabilities, 'text/xml');
@@ -29208,6 +29236,30 @@ var _DEBUG_ = false;
 
 function init() {
     _DEBUG_ && console.log("hbbtv-polyfill: load");
+
+    window.signalopenhbbtvbrowser = function(command) {
+        document.title = command;
+    }
+
+    // intercept XMLHttpRequest
+    let cefOldXHROpen = window.XMLHttpRequest.prototype.open;
+    window.XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
+        // do something with the method, url and etc.
+        _DEBUG_ && console.log("XMLHttpRequest.method: " + method);
+        _DEBUG_ && console.log("XMLHttpRequest.async: "  + async);
+        _DEBUG_ && console.log("XMLHttpRequest.url: "    + url);
+
+        url = window.cefXmlHttpRequestQuirk(url);
+
+        _DEBUG_ && console.log("XMLHttpRequest.newurl: " + url);
+        this.addEventListener('load', function() {
+            // do something with the response text
+            _DEBUG_ && console.log('XMLHttpRequest: url ' + url + ', load: ' + this.responseText);
+        });
+
+        return cefOldXHROpen.call(this, method, url, async, user, password);
+    }
+
     // global helper namespace to simplify testing
     window.HBBTV_POLYFILL_NS = window.HBBTV_POLYFILL_NS || {
     };
@@ -29227,6 +29279,7 @@ function init() {
         'ccid': 'ccid:dvbt.0',
         'dsd': ''
     };
+    window.HBBTV_POLYFILL_NS.preferredLanguage = window.HBBTV_POLYFILL_NS.preferredLanguage || 'DEU';
 
     // set body position
     document.body.style.position = "absolute";
@@ -29235,10 +29288,6 @@ function init() {
 
     Object(_keyevent_init_js__WEBPACK_IMPORTED_MODULE_0__["keyEventInit"])();
     Object(_hbbtv_js__WEBPACK_IMPORTED_MODULE_1__["hbbtvFn"])();
-
-    window.signalopenhbbtvbrowser = function(command) {
-        document.title = command;
-    }
 
     new _hbb_video_handler_js__WEBPACK_IMPORTED_MODULE_2__["VideoHandler"]().initialize();
 
@@ -29430,6 +29479,9 @@ const keyEventInit = function () {
         document.dispatchEvent(keypressEvent);
     }
 
+    window.keypressopenhbbtvbrowser = function(keyCode) {
+        doKeyPress(keyCode);
+    };
 };
 
 

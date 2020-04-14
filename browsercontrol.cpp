@@ -166,30 +166,7 @@ void CommandClient::readCommand()
             m_socket->read(buf, dataSize);
         buf[dataSize] = 0;
 
-        switch (command) {
-        case CommandUrlChange: {
-            QString url(buf);
-            emit setUrl(url);
-            break;
-        }
-
-        case CommandSIChange: {
-            QDataStream dataStream(buf);
-            quint32 pmt, tsid, onid, ssid, chantype, chanid;
-            dataStream >> pmt
-                       >> tsid
-                       >> onid
-                       >> ssid
-                       >> chantype
-                       >> chanid;
-            emit setSIData(pmt, tsid, onid, ssid, chantype, chanid);
-            break;
-        }
-
-        case CommandAITChange:
-            emit setAITData();
-            break;
-        }
+        qDebug() << "command" << command;
     }
 }
 

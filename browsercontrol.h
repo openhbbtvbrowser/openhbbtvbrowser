@@ -157,26 +157,17 @@ class CommandClient : public QObject
 
 public:
     enum BrowserCommand {
-        CommandUrlChange = 1,
-        CommandSIChange = 2,
-        CommandAITChange = 3,
-
-        CommandBroadcastPlay = 1001,
-        CommandBroadcastStop = 1002,
-        CommandVolumeMute = 1003,
-        CommandVolumeDown = 1004,
-        CommandVolumeUp = 1005,
-        CommandExit = 1006,
+        CommandBroadcastPlay = 1,
+        CommandBroadcastStop = 2,
+        CommandVolumeMute = 3,
+        CommandVolumeDown = 4,
+        CommandVolumeUp = 5,
+        CommandExit = 6,
     };
 
-    CommandClient(const QString &sockFile = QString("/tmp/.sock.browser"));
+    CommandClient(const QString &sockFile = QString("/tmp/openhbbtvbrowser.socket"));
     bool writeCommand(int command);
     bool writeCommand(int command, const QString &data);
-
-Q_SIGNALS:
-    void setUrl(const QString &url);
-    void setSIData(const quint32 &pmt, const quint32 &tsid, const quint32 &onid, const quint32 &ssid, const quint32 &chantype, const quint32 &chanid);
-    void setAITData();
 
 protected Q_SLOTS:
     void readCommand();

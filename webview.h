@@ -9,6 +9,10 @@ class WebView : public QWebEngineView
 
 public:
     WebView(QWidget *parent = Q_NULLPTR);
+    void injectHbbTVScripts();
+    void injectXmlHttpRequestScripts();
+    void setCurrentChannel(const int &onid, const int &tsid, const int &sid);
+    void setLanguage(const QString &language);
 
 Q_SIGNALS:
     void broadcastPlay();
@@ -18,6 +22,7 @@ public Q_SLOTS:
     void sendKeyEvent(const int &keyCode);
 
 protected Q_SLOTS:
+    void windowCloseRequested();
     void titleChanged(const QString &title);
     void loadFinished(bool ok);
 };

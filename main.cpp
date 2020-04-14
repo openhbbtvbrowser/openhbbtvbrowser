@@ -2,13 +2,14 @@
 #include "browserwindow.h"
 #include "webview.h"
 #include <QApplication>
+#include <QCommandLineParser>
 #include <QDir>
 #include <QLockFile>
 #include <QUrl>
 #include <QWebEngineSettings>
 #include <QWebEngineProfile>
 
-#if defined(Q_OS_LINUX)
+#if defined(EMBEDDED_BUILD)
 #include <sys/stat.h>
 #include <sys/mount.h>
 #include <errno.h>
@@ -35,9 +36,6 @@ int mkdir_mount_devshm(void)
 }
 #endif
 
-const QString userAgent =
-    QStringLiteral("HbbTV/1.4.1 (+DRM;Samsung;SmartTV2015;T-HKM6DEUC-1490.3;;) HybridTvViewer");
-
 QUrl commandLineUrlArgument()
 {
     const QStringList args = QCoreApplication::arguments();
@@ -50,13 +48,16 @@ QUrl commandLineUrlArgument()
 
 int main(int argc, char *argv[])
 {
-#if defined(Q_OS_LINUX)
+#if defined(EMBEDDED_BUILD)
     if (mkdir_mount_devshm())
         return 1;
 
-    qputenv("QT_QPA_FONTDIR", "/usr/share/fonts");
-    qputenv("QT_QPA_PLATFORM", "eglfs");
-    qputenv("QT_QPA_EGLFS_HIDECURSOR", "1");
+    if (qgetenv("QT_QPA_FONTDIR").isNull())
+        qputenv("QT_QPA_FONTDIR", "/usr/share/fonts");
+    if (qgetenv("QT_QPA_PLATFORM").isNull())
+        qputenv("QT_QPA_PLATFORM", "eglfs");
+    if (qgetenv("QT_QPA_EGLFS_HIDECURSOR").isNull())
+        qputenv("QT_QPA_EGLFS_HIDECURSOR", "1");
 #endif
 
     QCoreApplication::setOrganizationName(QLatin1String("Qt"));
@@ -66,10 +67,9 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
     QByteArrayList args = QByteArrayList()
-#if defined(Q_OS_OSX)
-            << QByteArrayLiteral("--remote-debugging-port=9000")
-#endif
-            << QByteArrayLiteral("--no-sandbox");
+            << QByteArrayLiteral("--disable-web-security")
+            << QByteArrayLiteral("--no-sandbox")
+            << QByteArrayLiteral("--log-level=0");
     const int count = args.size() + argc;
     QVector<char *> qargv(count);
 
@@ -83,24 +83,45 @@ int main(int argc, char *argv[])
 
     QApplication app(qAppArgCount, qargv.data());
 
+#if defined(EMBEDDED_BUILD)
     QLockFile lockFile(QDir::tempPath() + "/openhbbtvbrowser.lock");
     if(!lockFile.tryLock(100)) {
         qDebug() << "The application is already running.";
         return 1;
     }
+#endif
 
+    QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
+    QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::XSSAuditingEnabled, false);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::SpatialNavigationEnabled, true);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::AllowRunningInsecureContent, true);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::ShowScrollBars, false);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::PlaybackRequiresUserGesture, false);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::DnsPrefetchEnabled, true);
-    QWebEngineProfile::defaultProfile()->setHttpUserAgent(userAgent);
+    QWebEngineProfile::defaultProfile()->setHttpUserAgent(
+        QWebEngineProfile::defaultProfile()->httpUserAgent() + QStringLiteral(" HbbTV/1.3.1 SmartTV2015"));
+
+    int onid = -1;
+    int tsid = -1;
+    int sid = -1;
+
+    QCommandLineParser parser;
+    parser.addOption(QCommandLineOption("onid", "Original Network ID", "onid"));
+    parser.addOption(QCommandLineOption("tsid", "Transport Stream ID", "tsid"));
+    parser.addOption(QCommandLineOption("sid", "Service ID", "sid"));
+    parser.parse(QCoreApplication::arguments());
+    if (parser.isSet("onid"))
+        onid = parser.value("onid").toInt();
+    if (parser.isSet("tsid"))
+        tsid = parser.value("tsid").toInt();
+    if (parser.isSet("sid"))
+        sid = parser.value("sid").toInt();
 
     QUrl url = commandLineUrlArgument();
 
     auto window = new BrowserWindow();
-#if defined(Q_OS_LINUX)
+#if defined(EMBEDDED_BUILD)
     window->showFullScreen();
     window->setWindowFlags(Qt::FramelessWindowHint);
     window->setAttribute(Qt::WA_TranslucentBackground);
@@ -108,10 +129,15 @@ int main(int argc, char *argv[])
 #else
     window->resize(1280, 720);
 #endif
+    window->webView()->injectHbbTVScripts();
+    window->webView()->injectXmlHttpRequestScripts();
+    if (onid != -1 && tsid != -1 && sid != -1)
+        window->webView()->setCurrentChannel(onid, tsid, sid);
+    window->webView()->setLanguage(QStringLiteral("DEU")); // TODO:
     window->webView()->setUrl(url);
     window->show();
 
-#if defined(Q_OS_LINUX)
+#if defined(EMBEDDED_BUILD)
     auto remote = new RemoteController();
     QObject::connect(remote, &RemoteController::activate, window->webView(), &WebView::sendKeyEvent);
     QObject::connect(remote, &RemoteController::volumeMute, window, &BrowserWindow::volumeMute);
