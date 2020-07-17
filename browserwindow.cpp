@@ -30,18 +30,3 @@ void BrowserWindow::broadcastStop()
 {
     m_commandClient->writeCommand(CommandClient::CommandBroadcastStop);
 }
-
-void BrowserWindow::volumeMute()
-{
-    m_commandClient->writeCommand(CommandClient::CommandVolumeMute);
-}
-
-void BrowserWindow::volumeDown()
-{
-    m_commandClient->writeCommand(CommandClient::CommandVolumeDown);
-}
-
-void BrowserWindow::volumeUp()
-{
-    m_commandClient->writeCommand(CommandClient::CommandVolumeUp);
-}

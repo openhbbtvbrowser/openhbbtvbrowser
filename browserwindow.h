@@ -14,11 +14,6 @@ public:
     BrowserWindow(QWidget *parent = Q_NULLPTR, Qt::WindowFlags flags = Qt::Widget);
     WebView *webView();
 
-public Q_SLOTS:
-    void volumeMute();
-    void volumeDown();
-    void volumeUp();
-
 protected Q_SLOTS:
     void broadcastPlay();
     void broadcastStop();

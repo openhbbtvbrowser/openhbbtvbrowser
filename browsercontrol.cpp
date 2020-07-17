@@ -1,11 +1,17 @@
 #include "browsercontrol.h"
 #include "browserwindow.h"
+#include <QKeyEvent>
+
+#if defined(EMBEDDED_BUILD)
+
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <QKeyEvent>
+#include <linux/dvb/version.h>
+#include <linux/dvb/audio.h>
 
 RemoteController::RemoteController(const QString &device)
+    : m_muteToggle(false)
 {
     m_fd = ::open(device.toLocal8Bit().constData(), O_RDONLY, 0);
     if (m_fd >= 0) {
@@ -82,15 +88,63 @@ void RemoteController::readKeycode()
             case KEY_STOP:          vk = VK_STOP; break;
             case KEY_FASTFORWARD:   vk = VK_FAST_FWD; break;
             case KEY_REWIND:        vk = VK_REWIND; break;
-            case KEY_MUTE:          emit volumeMute(); break;
-            case KEY_VOLUMEDOWN:    emit volumeDown(); break;
-            case KEY_VOLUMEUP:      emit volumeUp(); break;
+            case KEY_MUTE:          volumeMute(); break;
+            case KEY_VOLUMEDOWN:    volumeDown(); break;
+            case KEY_VOLUMEUP:      volumeUp(); break;
             case KEY_MENU:          QApplication::quit(); break; // TODO
             }
             if (vk != VK_UNDEFINED) emit activate(vk);
         }
     }
 }
+
+void RemoteController::volumeMute()
+{
+    int fd = open("/dev/dvb/adapter0/audio0", O_RDWR);
+    if (fd >= 0) {
+        m_muteToggle = !m_muteToggle;
+        ioctl(fd, AUDIO_SET_MUTE, m_muteToggle);
+        ::close(fd);
+    }
+}
+
+void RemoteController::volumeDown()
+{
+    int fd = open("/dev/dvb/adapter0/audio0", O_RDWR);
+    if (fd >= 0) {
+        struct audio_status status;
+        ioctl(fd, AUDIO_GET_STATUS, &status);
+        int volume = status.mixer_state.volume_left;
+        if (volume++ > 63)
+            volume = 63;
+        status.mixer_state.volume_left =
+	    status.mixer_state.volume_right = volume;
+        ioctl(fd, AUDIO_SET_MIXER, &status.mixer_state);
+        m_muteToggle = false;
+        ioctl(fd, AUDIO_SET_MUTE, m_muteToggle);
+        ::close(fd);
+    }
+}
+
+void RemoteController::volumeUp()
+{
+    int fd = open("/dev/dvb/adapter0/audio0", O_RDWR);
+    if (fd >= 0) {
+        struct audio_status status;
+        ioctl(fd, AUDIO_GET_STATUS, &status);
+        int volume = status.mixer_state.volume_left;
+        if (--volume < 0)
+            volume = 0;
+        status.mixer_state.volume_left =
+	    status.mixer_state.volume_right = volume;
+        ioctl(fd, AUDIO_SET_MIXER, &status.mixer_state);
+        m_muteToggle = false;
+        ioctl(fd, AUDIO_SET_MUTE, m_muteToggle);
+        ::close(fd);
+    }
+}
+
+#endif
 
 WindowEventFilter::WindowEventFilter(QObject *parent)
     : QObject(parent)

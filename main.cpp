@@ -140,9 +140,6 @@ int main(int argc, char *argv[])
 #if defined(EMBEDDED_BUILD)
     auto remote = new RemoteController();
     QObject::connect(remote, &RemoteController::activate, window->webView(), &WebView::sendKeyEvent);
-    QObject::connect(remote, &RemoteController::volumeMute, window, &BrowserWindow::volumeMute);
-    QObject::connect(remote, &RemoteController::volumeDown, window, &BrowserWindow::volumeDown);
-    QObject::connect(remote, &RemoteController::volumeUp, window, &BrowserWindow::volumeUp);
 #endif
 
     auto filter = new WindowEventFilter();
