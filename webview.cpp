@@ -13,16 +13,16 @@ WebView::WebView(QWidget *parent)
     connect(this, &QWebEngineView::loadFinished, this, &WebView::loadFinished);
 }
 
-void WebView::injectHbbTVScripts()
+void WebView::injectHbbTVScripts(const QString &src)
 {
     QWebEngineScript script;
 
     QString s = QString::fromLatin1("(function() {"
                                     "  var element = document.createElement('script');"
                                     "  element.setAttribute('type','text/javascript');"
-                                    "  element.setAttribute('src','qrc:/hbbtv_polyfill.js');"
+                                    "  element.setAttribute('src','%1');"
                                     "  document.head.appendChild(element);"
-                                    "})()");
+                                    "})()").arg(src);
 
     script.setName("hbbtv_polyfill");
     script.setSourceCode(s);

@@ -102,15 +102,19 @@ int main(int argc, char *argv[])
     QWebEngineProfile::defaultProfile()->setHttpUserAgent(
         QWebEngineProfile::defaultProfile()->httpUserAgent() + QStringLiteral(" HbbTV/1.3.1 SmartTV2015"));
 
+    QString src = QStringLiteral("qrc:/hbbtv_polyfill.js");
     int onid = -1;
     int tsid = -1;
     int sid = -1;
 
     QCommandLineParser parser;
+    parser.addOption(QCommandLineOption("src", "Script Src", "src"));
     parser.addOption(QCommandLineOption("onid", "Original Network ID", "onid"));
     parser.addOption(QCommandLineOption("tsid", "Transport Stream ID", "tsid"));
     parser.addOption(QCommandLineOption("sid", "Service ID", "sid"));
     parser.parse(QCoreApplication::arguments());
+    if (parser.isSet("src"))
+        src = parser.value("src");
     if (parser.isSet("onid"))
         onid = parser.value("onid").toInt();
     if (parser.isSet("tsid"))
@@ -129,7 +133,7 @@ int main(int argc, char *argv[])
 #else
     window->resize(1280, 720);
 #endif
-    window->webView()->injectHbbTVScripts();
+    window->webView()->injectHbbTVScripts(src);
     window->webView()->injectXmlHttpRequestScripts();
     if (onid != -1 && tsid != -1 && sid != -1)
         window->webView()->setCurrentChannel(onid, tsid, sid);
