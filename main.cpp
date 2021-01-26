@@ -144,11 +144,11 @@ int main(int argc, char *argv[])
 #if defined(EMBEDDED_BUILD)
     auto remote = new RemoteController();
     QObject::connect(remote, &RemoteController::activate, window->webView(), &WebView::sendKeyEvent);
-#endif
-
+#else
     auto filter = new WindowEventFilter();
     app.installEventFilter(filter);
     QObject::connect(filter, &WindowEventFilter::activate, window->webView(), &WebView::sendKeyEvent);
+#endif
 
     return app.exec();
 }
