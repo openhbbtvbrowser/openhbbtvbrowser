@@ -6,9 +6,6 @@
 WebView::WebView(QWidget *parent)
     : QWebEngineView(parent)
 {
-    page()->setBackgroundColor(Qt::transparent);
-
-    connect(page(), &QWebEnginePage::windowCloseRequested, this, &WebView::windowCloseRequested);
     connect(this, &QWebEngineView::titleChanged, this, &WebView::titleChanged);
     connect(this, &QWebEngineView::loadFinished, this, &WebView::loadFinished);
 }
@@ -81,7 +78,23 @@ void WebView::setLanguage(const QString &language)
                                     "  window.HBBTV_POLYFILL_NS.preferredLanguage = '%1';"
                                     "})()").arg(language);
 
-    script.setName("current_channel");
+    script.setName("preferred_language");
+    script.setSourceCode(s);
+    script.setInjectionPoint(QWebEngineScript::DocumentReady);
+    script.setRunsOnSubFrames(true);
+    script.setWorldId(QWebEngineScript::MainWorld);
+    page()->scripts().insert(script);
+}
+
+void WebView::setScriptDebugging(const QString &scriptDebugging)
+{
+    QWebEngineScript script;
+
+    QString s = QString::fromLatin1("(function() {"
+                                    "  window.HBBTV_POLYFILL_DEBUG = %1;"
+                                    "})()").arg(scriptDebugging);
+
+    script.setName("hbbtv_polyfill_debug");
     script.setSourceCode(s);
     script.setInjectionPoint(QWebEngineScript::DocumentReady);
     script.setRunsOnSubFrames(true);
@@ -95,11 +108,6 @@ void WebView::sendKeyEvent(const int &keyCode)
                                     "  document.dispatchEvent(new KeyboardEvent('keydown',{keyCode:%1}));"
                                     "})()").arg(keyCode);
     page()->runJavaScript(s);
-}
-
-void WebView::windowCloseRequested()
-{
-    qDebug() << "windowCloseRequested";
 }
 
 void WebView::titleChanged(const QString &title)

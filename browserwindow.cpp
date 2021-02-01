@@ -1,5 +1,6 @@
 #include "browsercontrol.h"
 #include "browserwindow.h"
+#include "webpage.h"
 #include "webview.h"
 #include <QWebEngineProfile>
 
@@ -8,6 +9,8 @@ BrowserWindow::BrowserWindow(QWidget *parent, Qt::WindowFlags flags)
     , m_commandClient(new CommandClient)
     , m_webView(new WebView(this))
 {
+    WebPage *page = new WebPage(QWebEngineProfile::defaultProfile(), m_webView);
+    m_webView->setPage(page);
     m_webView->show();
 
     setCentralWidget(m_webView);
