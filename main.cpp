@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::PlaybackRequiresUserGesture, false);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::DnsPrefetchEnabled, true);
     QWebEngineProfile::defaultProfile()->setHttpUserAgent(
-        QWebEngineProfile::defaultProfile()->httpUserAgent() + QStringLiteral(" HbbTV/1.3.1 SmartTV2015"));
+        QWebEngineProfile::defaultProfile()->httpUserAgent() + QStringLiteral(" HbbTV/1.4.1 SmartTV2015"));
 
     QString src = QStringLiteral("qrc:/hbbtv_polyfill.js");
     int onid = -1;
