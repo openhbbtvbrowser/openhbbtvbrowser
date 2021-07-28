@@ -91,7 +91,8 @@ void RemoteController::readKeycode()
             case KEY_MUTE:          volumeMute(); break;
             case KEY_VOLUMEDOWN:    volumeDown(); break;
             case KEY_VOLUMEUP:      volumeUp(); break;
-            case KEY_MENU:          QApplication::quit(); break; // TODO
+            case KEY_POWER:         [[fallthrough]];
+            case KEY_MENU:          QApplication::quit(); break; // TODO: Dialog
             }
             if (vk != VK_UNDEFINED) emit activate(vk);
         }

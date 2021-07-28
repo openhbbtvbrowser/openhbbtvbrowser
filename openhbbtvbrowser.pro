@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = openhbbtvbrowser
 QT += webenginewidgets
-CONFIG += c++11
+CONFIG += c++1z
 CONFIG += console
 
 cross_compile: DEFINES += EMBEDDED_BUILD

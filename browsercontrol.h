@@ -104,6 +104,7 @@ struct input_event {
 #define KEY_MUTE		113
 #define KEY_VOLUMEDOWN	114
 #define KEY_VOLUMEUP	115
+#define KEY_POWER		116
 #define KEY_PAUSE		119
 #define KEY_STOP		128
 #define KEY_MENU		139
