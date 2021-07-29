@@ -30928,7 +30928,7 @@ const keyEventInit = function () {
         Object.defineProperty(keyDownEvent, "keyCode", { "value": window[keyCode] });
         Object.defineProperty(keyDownEvent, "detail", { "value": { hbbInternal: true } });
 
-        document.dispatchEvent(keyDownEvent);
+        document.activeElement.dispatchEvent(keyDownEvent);
 
         // create and dispatch the event
         var keypressEvent = new KeyboardEvent("keypress", {
@@ -30939,7 +30939,7 @@ const keyEventInit = function () {
         Object.defineProperty(keypressEvent, "keyCode", { "value": window[keyCode] });
         Object.defineProperty(keypressEvent, "detail", { "value": { hbbInternal: true } });
 
-        document.dispatchEvent(keypressEvent);
+        document.activeElement.dispatchEvent(keypressEvent);
     }
 
     window.keypressopenhbbtvbrowser = function(keyCode) {
