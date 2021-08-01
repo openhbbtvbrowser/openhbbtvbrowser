@@ -92,9 +92,9 @@ int main(int argc, char *argv[])
 #endif
 
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
-    QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::XSSAuditingEnabled, false);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::SpatialNavigationEnabled, true);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
+    QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::AllowRunningInsecureContent, true);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::ShowScrollBars, false);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::PlaybackRequiresUserGesture, false);
@@ -136,6 +136,7 @@ int main(int argc, char *argv[])
     window->resize(1280, 720);
 #endif
     window->webView()->injectHbbTVScripts(src);
+    window->webView()->injectHbbTVQuirks();
     window->webView()->injectXmlHttpRequestScripts();
     if (onid != -1 && tsid != -1 && sid != -1)
         window->webView()->setCurrentChannel(onid, tsid, sid);

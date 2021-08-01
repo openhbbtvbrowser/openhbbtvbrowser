@@ -1,5 +1,6 @@
 #include "browsercontrol.h"
 #include "browserwindow.h"
+#include "virtualkey.h"
 #include <QKeyEvent>
 
 #if defined(EMBEDDED_BUILD)
@@ -61,40 +62,43 @@ void RemoteController::readKeycode()
 
     for (int i = 0; i < n; ++i) {
         if (buffer[i].type == 1 && buffer[i].value != 0) {
-            int vk = VK_UNDEFINED;
+            int vk = VirtualKey::VK_UNDEFINED;
             switch (buffer[i].code) {
-            case KEY_RED:           vk = VK_RED; break;
-            case KEY_GREEN:         vk = VK_GREEN; break;
-            case KEY_YELLOW:        vk = VK_YELLOW; break;
-            case KEY_BLUE:          vk = VK_BLUE; break;
-            case KEY_LEFT:          vk = VK_LEFT; break;
-            case KEY_UP:            vk = VK_UP; break;
-            case KEY_RIGHT:         vk = VK_RIGHT; break;
-            case KEY_DOWN:          vk = VK_DOWN; break;
-            case KEY_OK:            vk = VK_ENTER; break;
-            case KEY_EXIT:          vk = VK_BACK_SPACE; break;
-            case KEY_0:             vk = VK_0; break;
-            case KEY_1:             vk = VK_1; break;
-            case KEY_2:             vk = VK_2; break;
-            case KEY_3:             vk = VK_3; break;
-            case KEY_4:             vk = VK_4; break;
-            case KEY_5:             vk = VK_5; break;
-            case KEY_6:             vk = VK_6; break;
-            case KEY_7:             vk = VK_7; break;
-            case KEY_8:             vk = VK_8; break;
-            case KEY_9:             vk = VK_9; break;
-            case KEY_PAUSE:         vk = VK_PAUSE; break;
-            case KEY_PLAY:          vk = VK_PLAY; break;
-            case KEY_STOP:          vk = VK_STOP; break;
-            case KEY_FASTFORWARD:   vk = VK_FAST_FWD; break;
-            case KEY_REWIND:        vk = VK_REWIND; break;
-            case KEY_MUTE:          volumeMute(); break;
-            case KEY_VOLUMEDOWN:    volumeDown(); break;
-            case KEY_VOLUMEUP:      volumeUp(); break;
-            case KEY_POWER:         [[fallthrough]];
-            case KEY_MENU:          QApplication::quit(); break; // TODO: Dialog
+            case KEY_RED:           vk = VirtualKey::VK_RED; break;
+            case KEY_GREEN:         vk = VirtualKey::VK_GREEN; break;
+            case KEY_YELLOW:        vk = VirtualKey::VK_YELLOW; break;
+            case KEY_BLUE:          vk = VirtualKey::VK_BLUE; break;
+            case KEY_LEFT:          vk = VirtualKey::VK_LEFT; break;
+            case KEY_UP:            vk = VirtualKey::VK_UP; break;
+            case KEY_RIGHT:         vk = VirtualKey::VK_RIGHT; break;
+            case KEY_DOWN:          vk = VirtualKey::VK_DOWN; break;
+            case KEY_OK:            vk = VirtualKey::VK_ENTER; break;
+            case KEY_EXIT:          vk = VirtualKey::VK_BACK; break;
+            case KEY_0:             vk = VirtualKey::VK_0; break;
+            case KEY_1:             vk = VirtualKey::VK_1; break;
+            case KEY_2:             vk = VirtualKey::VK_2; break;
+            case KEY_3:             vk = VirtualKey::VK_3; break;
+            case KEY_4:             vk = VirtualKey::VK_4; break;
+            case KEY_5:             vk = VirtualKey::VK_5; break;
+            case KEY_6:             vk = VirtualKey::VK_6; break;
+            case KEY_7:             vk = VirtualKey::VK_7; break;
+            case KEY_8:             vk = VirtualKey::VK_8; break;
+            case KEY_9:             vk = VirtualKey::VK_9; break;
+            case KEY_PAUSE:         vk = VirtualKey::VK_PAUSE; break;
+            case KEY_PLAY:          vk = VirtualKey::VK_PLAY; break;
+            case KEY_STOP:          vk = VirtualKey::VK_STOP; break;
+            case KEY_FASTFORWARD:   vk = VirtualKey::VK_FAST_FWD; break;
+            case KEY_REWIND:        vk = VirtualKey::VK_REWIND; break;
+            case KEY_MUTE:          vk = VirtualKey::VK_MUTE; break;
+            case KEY_VOLUMEDOWN:    vk = VirtualKey::VK_VOLUME_DOWN; break;
+            case KEY_VOLUMEUP:      vk = VirtualKey::VK_VOLUME_UP; break;
+            case KEY_INFO:          vk = VirtualKey::VK_INFO; break;
+            case KEY_TEXT:          vk = VirtualKey::VK_TELETEXT; break;
+            case KEY_SUBTITLE:      vk = VirtualKey::VK_SUBTITLE; break;
+            case KEY_MENU:          vk = VirtualKey::VK_MENU; break;
+            case KEY_POWER:         QApplication::quit(); break;
             }
-            if (vk != VK_UNDEFINED) emit activate(vk);
+            if (vk != VirtualKey::VK_UNDEFINED) emit activate(vk);
         }
     }
 }
@@ -156,35 +160,36 @@ bool WindowEventFilter::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        int vk = VK_UNDEFINED;
+        int vk = VirtualKey::VK_UNDEFINED;
         switch (keyEvent->key()) {
-        case Qt::Key_R:             vk = VK_RED; break;
-        case Qt::Key_G:             vk = VK_GREEN; break;
-        case Qt::Key_Y:             vk = VK_YELLOW; break;
-        case Qt::Key_B:             vk = VK_BLUE; break;
-        case Qt::Key_Left:          vk = VK_LEFT; break;
-        case Qt::Key_Up:            vk = VK_UP; break;
-        case Qt::Key_Right:         vk = VK_RIGHT; break;
-        case Qt::Key_Down:          vk = VK_DOWN; break;
-        case Qt::Key_Return:        vk = VK_ENTER; break;
-        case Qt::Key_Backspace:     vk = VK_BACK_SPACE; break;
-        case Qt::Key_0:             vk = VK_0; break;
-        case Qt::Key_1:             vk = VK_1; break;
-        case Qt::Key_2:             vk = VK_2; break;
-        case Qt::Key_3:             vk = VK_3; break;
-        case Qt::Key_4:             vk = VK_4; break;
-        case Qt::Key_5:             vk = VK_5; break;
-        case Qt::Key_6:             vk = VK_6; break;
-        case Qt::Key_7:             vk = VK_7; break;
-        case Qt::Key_8:             vk = VK_8; break;
-        case Qt::Key_9:             vk = VK_9; break;
-        case Qt::Key_K:             vk = VK_PAUSE; break;
-        case Qt::Key_J:             vk = VK_PLAY; break;
-        case Qt::Key_L:             vk = VK_STOP; break;
-        case Qt::Key_P:             vk = VK_FAST_FWD; break;
-        case Qt::Key_N:             vk = VK_REWIND; break;
+        case Qt::Key_R:             vk = VirtualKey::VK_RED; break;
+        case Qt::Key_G:             vk = VirtualKey::VK_GREEN; break;
+        case Qt::Key_Y:             vk = VirtualKey::VK_YELLOW; break;
+        case Qt::Key_B:             vk = VirtualKey::VK_BLUE; break;
+        case Qt::Key_Left:          vk = VirtualKey::VK_LEFT; break;
+        case Qt::Key_Up:            vk = VirtualKey::VK_UP; break;
+        case Qt::Key_Right:         vk = VirtualKey::VK_RIGHT; break;
+        case Qt::Key_Down:          vk = VirtualKey::VK_DOWN; break;
+        case Qt::Key_Return:        vk = VirtualKey::VK_ENTER; break;
+        case Qt::Key_Backspace:     vk = VirtualKey::VK_BACK; break;
+        case Qt::Key_0:             vk = VirtualKey::VK_0; break;
+        case Qt::Key_1:             vk = VirtualKey::VK_1; break;
+        case Qt::Key_2:             vk = VirtualKey::VK_2; break;
+        case Qt::Key_3:             vk = VirtualKey::VK_3; break;
+        case Qt::Key_4:             vk = VirtualKey::VK_4; break;
+        case Qt::Key_5:             vk = VirtualKey::VK_5; break;
+        case Qt::Key_6:             vk = VirtualKey::VK_6; break;
+        case Qt::Key_7:             vk = VirtualKey::VK_7; break;
+        case Qt::Key_8:             vk = VirtualKey::VK_8; break;
+        case Qt::Key_9:             vk = VirtualKey::VK_9; break;
+        case Qt::Key_K:             vk = VirtualKey::VK_PAUSE; break;
+        case Qt::Key_J:             vk = VirtualKey::VK_PLAY; break;
+        case Qt::Key_L:             vk = VirtualKey::VK_STOP; break;
+        case Qt::Key_P:             vk = VirtualKey::VK_FAST_FWD; break;
+        case Qt::Key_N:             vk = VirtualKey::VK_REWIND; break;
+        case Qt::Key_Q:             QApplication::quit(); break;
         }
-        if (vk != VK_UNDEFINED) emit activate(vk);
+        if (vk != VirtualKey::VK_UNDEFINED) emit activate(vk);
         return true;
     }
 

@@ -7,6 +7,7 @@ CONFIG += console
 cross_compile: DEFINES += EMBEDDED_BUILD
 
 HEADERS += \
+    virtualkey.h \
     browsercontrol.h \
     browserwindow.h \
     webpage.h \
