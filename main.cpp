@@ -136,7 +136,6 @@ int main(int argc, char *argv[])
     window->resize(1280, 720);
 #endif
     window->webView()->injectHbbTVScripts(src);
-    window->webView()->injectHbbTVQuirks();
     window->webView()->injectXmlHttpRequestScripts();
     if (onid != -1 && tsid != -1 && sid != -1)
         window->webView()->setCurrentChannel(onid, tsid, sid);

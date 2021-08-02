@@ -11,7 +11,6 @@ class WebView : public QWebEngineView
 public:
     WebView(QWidget *parent = Q_NULLPTR);
     void injectHbbTVScripts(const QString &src);
-    void injectHbbTVQuirks();
     void injectXmlHttpRequestScripts();
     void setCurrentChannel(const int &onid, const int &tsid, const int &sid);
     void setLanguage(const QString &language);

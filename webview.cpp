@@ -45,25 +45,6 @@ void WebView::injectHbbTVScripts(const QString &src)
     page()->scripts().insert(script);
 }
 
-void WebView::injectHbbTVQuirks()
-{
-    QWebEngineScript script;
-
-    QString s = QString::fromLatin1("(function() {"
-                                    "  var element = document.createElement('script');"
-                                    "  element.setAttribute('type', 'text/javascript');"
-                                    "  element.setAttribute('src', 'qrc:/hbbtv_quirks.js');"
-                                    "  document.head.appendChild(element);"
-                                    "})();");
-
-    script.setName("hbbtv_quirks");
-    script.setSourceCode(s);
-    script.setInjectionPoint(QWebEngineScript::DocumentReady);
-    script.setRunsOnSubFrames(true);
-    script.setWorldId(QWebEngineScript::MainWorld);
-    page()->scripts().insert(script);
-}
-
 void WebView::injectXmlHttpRequestScripts()
 {
     QWebEngineScript script;
@@ -169,6 +150,14 @@ void WebView::sendKeyEvent(const int &keyCode)
                                     "    Object.defineProperty(keyEvent, 'keyCode', { value: window['%2'] });"
                                     "  }"
                                     "  document.activeElement.dispatchEvent(keyEvent);"
+                                    "  if (%1 == 13) {"
+                                    "    var mouseEvent = new MouseEvent('click', {"
+                                    "      bubbles : true,"
+                                    "      cancelable : true,"
+                                    "    });"
+                                    "    document.activeElement.dispatchEvent(mouseEvent);"
+                                    "  }"
+                                    ""
                                     "})();").arg(keyCode).arg(metaEnum.valueToKey(keyCode));
     page()->runJavaScript(s);
 }
