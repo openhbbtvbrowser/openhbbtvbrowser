@@ -23,5 +23,5 @@ jobs:
     - uses: actions/checkout@v2
     - name: make
       run: |
-        qmake
+        qmake CONFIG+=cross_compile
         make
