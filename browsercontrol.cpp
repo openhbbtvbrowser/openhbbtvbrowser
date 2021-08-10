@@ -95,7 +95,7 @@ void RemoteController::readKeycode()
             case KEY_INFO:          vk = VirtualKey::VK_INFO; break;
             case KEY_TEXT:          vk = VirtualKey::VK_TELETEXT; break;
             case KEY_SUBTITLE:      vk = VirtualKey::VK_SUBTITLE; break;
-            case KEY_MENU:          vk = VirtualKey::VK_MENU; break;
+            case KEY_MENU:          [[fallthrough]];
             case KEY_POWER:         QApplication::quit(); break;
             }
             if (vk != VirtualKey::VK_UNDEFINED) emit activate(vk);
